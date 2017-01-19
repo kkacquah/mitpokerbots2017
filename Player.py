@@ -2,8 +2,8 @@ import argparse
 import socket
 import sys
 #my changes
-#haha more changes yay
-
+#haha more changes 
+#lolz
 """
 Simple example pokerbot, written in python.
 
