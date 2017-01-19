@@ -9,6 +9,7 @@ This is an example of a bare bones pokerbot. It only sets up the socket
 necessary to connect with the engine and then always returns the same action.
 It is meant as an example of how a pokerbot should communicate with the engine.
 """
+#helloworld
 class Player:
     def run(self, input_socket):
         # Get a file-object for reading packets from the socket.
