@@ -3,7 +3,7 @@ import socket
 import sys
 #my changes
 #haha more changes 
-#lolz
+#final changes
 """
 Simple example pokerbot, written in python.
 
