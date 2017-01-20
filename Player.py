@@ -1,13 +1,15 @@
 import argparse
 import socket
 import sys
-import prefloplogic as pl
+import prefloplogic as preflop
 """
 Simple example pokerbot, written in python.
 
 This is an example of a bare bones pokerbot. It only sets up the socket
 necessary to connect with the engine and then always returns the same action.
 It is meant as an example of how a pokerbot should communicate with the engine.
+
+PocketAces v0.1a
 """
 class Player:
     def run(self, input_socket):
@@ -16,7 +18,7 @@ class Player:
         f_in = input_socket.makefile()
         while True:
             # Block until the engine sends us a packet.
-            data = f_in.readline().strip()
+            data = f_in.readline().strip().split()
             # If data is None, connection has closed.
             if not data:
                 print "Gameover, engine disconnected."
@@ -32,19 +34,85 @@ class Player:
             # illegal action.
             # When sending responses, terminate each response with a newline
             # character (\n) or your bot will hang!
-            word = data.split()[0]
+            word = data[0]
+            if word == 'NEWGAME':
+                myName = data[1]
+				
+                bigblind = data[4]
+                totalHands = data[5]
+                timeBank = data[6]
+                print 'NEWGAME start'
+                print myName
+                print bigblind
+                print totalHands
+                print timeBank
+                print 'packet end'
             if word == 'NEWHAND':
-                # myHand stores hole cards. You'll want to update this if you ever discard
-                myHand = [data.split()[3],data.split()[4]]
-                print myHand
+				handId = data[1] # number hand (1-1000)
+				button = data[2] #small blind (True/False) -> act firt preflop then second
+				myHand = [data[3],data[4]]
+				profits = data[5]
+				#timeBank = data[7]
+				print myHand
+    
             if word == "GETACTION":
+                print 'getaction start'
+                numBoardCards = int(data[2])
+                print numBoardCards
+                boardCards = []
+                for i in range(0,numBoardCards):
+                    boardCards.append(data[3+i])
+                    
+                numLastActions = int(data[3+numBoardCards])
+                lastActions = []
+                for i in range(0,numLastActions):
+                    lastActions.append(data[4+i])
+                numLegalActions = int(data[4+numBoardCards+numLastActions])
+                legalActions = []
+                for i in range(0,numLegalActions):
+                    legalActions.append(data[5+i])
                 # calls function defined in other python file
-                action = pl.getaction(myHand,data)
+                action = 'CHECK\n'
+                if numBoardCards == 0 : #preflop
+                    action = preflop.getaction(myHand,data)
                 s.send(action)
-            elif word == "REQUESTKEYVALUES":
+				#elif numBoardCards == 3 : #flop
+					#action = ...
+				#elif numBoardCards == 4: #turn
+					
+				#elif numBoardCards == 5: #river
+						
+				#else:
+					#something broke 
+					
+                 
+                
+            if word == "HANDOVER":
+				#indicates the conclusion of the current hand
+				numBoardCards = int(data[3])
+				boardCards = []
+				for i in range(0,numBoardCards):
+					boardCards.append(data[4+i])
+				
+				numLastActions = int(data[4+numBoardCards])
+				lastActions = []
+				for i in range(0,numLastActions):
+					lastActions.append(data[5+i])
+					
+				timeBank = data[5+numBoardCards+numLastActions]
+            
+            if word == "KEYVALUE" :
+				key = data[1]
+				value = data[2]
+				#now store/ use this somehow
+    
+            if word == "REQUESTKEYVALUES":
                 # At the end, the engine will allow your bot save key/value pairs.
                 # Send FINISH to indicate you're done.
-                s.send("FINISH\n")
+                
+				#s.send("PUT key value") #for each pair
+				s.send("FINISH\n")
+				
         # Clean up the socket.
         s.close()
 
