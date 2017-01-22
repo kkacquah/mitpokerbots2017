@@ -2,6 +2,7 @@ import argparse
 import socket
 import sys
 import prefloplogic as preflop
+import historian as hist
 """
 Simple example pokerbot, written in python.
 
@@ -11,13 +12,19 @@ It is meant as an example of how a pokerbot should communicate with the engine.
 
 PocketAces v0.1a
 """
+
 class Player:
+    
     def run(self, input_socket):
+        firstround = True
         # Get a file-object for reading packets from the socket.
         # Using this ensures that you get exactly one packet per read.
         f_in = input_socket.makefile()
+        lastActions = None
         while True:
-            # Block until the engine sends us a packet.
+            
+            # Block until the engine sends us a packet
+            
             data = f_in.readline().strip().split()
             # If data is None, connection has closed.
             if not data:
@@ -48,25 +55,28 @@ class Player:
                 print timeBank
                 print 'packet end'
             if word == 'NEWHAND':
-				handId = data[1] # number hand (1-1000)
-				button = data[2] #small blind (True/False) -> act firt preflop then second
-				myHand = [data[3],data[4]]
-				profits = data[5]
-				#timeBank = data[7]
-				print myHand
+		handId = data[1] # number hand (1-1000)
+		button = data[2] #small blind (True/False) -> act firt preflop then second
+		myHand = [data[3],data[4]]
+		profits = data[5]
+		#timeBank = data[7]
+		print myHand
+		print hist.display_stats()
+		lastActions = []
     
             if word == "GETACTION":
-                print 'getaction start'
                 numBoardCards = int(data[2])
-                print numBoardCards
                 boardCards = []
                 for i in range(0,numBoardCards):
                     boardCards.append(data[3+i])
                     
                 numLastActions = int(data[3+numBoardCards])
-                lastActions = []
+                print numLastActions
+                #Collect last actions, the packet wasn't returning all of them
                 for i in range(0,numLastActions):
-                    lastActions.append(data[4+i])
+                    lastActions.append(data[4+numBoardCards+i])
+                numLegalActions = int(data[4+numBoardCards+numLastActions])
+                print lastActions
                 numLegalActions = int(data[4+numBoardCards+numLastActions])
                 legalActions = []
                 for i in range(0,numLegalActions):
@@ -85,33 +95,35 @@ class Player:
 				#else:
 					#something broke 
 					
-                 
+                
                 
             if word == "HANDOVER":
-				#indicates the conclusion of the current hand
-				numBoardCards = int(data[3])
-				boardCards = []
-				for i in range(0,numBoardCards):
-					boardCards.append(data[4+i])
-				
-				numLastActions = int(data[4+numBoardCards])
-				lastActions = []
-				for i in range(0,numLastActions):
-					lastActions.append(data[5+i])
-					
-				timeBank = data[5+numBoardCards+numLastActions]
-            
+                PandL = int(data[2])
+		#indicates the conclusion of the current hand
+		numBoardCards = int(data[3])
+		boardCards = []
+		for i in range(numBoardCards):
+		    boardCards.append(data[4+i])
+		numLastActions = int(data[4+numBoardCards])
+		#Collect last actions, the packet wasn't returning all of them
+                for i in range(0,numLastActions):
+			lastActions.append(data[5+numBoardCards+i])
+		print lastActions
+		hist.update(lastActions)                    
+		print hist.display_stats()	
+		timeBank = data[5+numBoardCards+numLastActions]
+                lastActions = []                
             if word == "KEYVALUE" :
-				key = data[1]
-				value = data[2]
-				#now store/ use this somehow
+		key = data[1]
+		value = data[2]
+		#now store/ use this somehow
     
             if word == "REQUESTKEYVALUES":
                 # At the end, the engine will allow your bot save key/value pairs.
                 # Send FINISH to indicate you're done.
                 
-				#s.send("PUT key value") #for each pair
-				s.send("FINISH\n")
+		#s.send("PUT key value") #for each pair
+		s.send("FINISH\n")
 				
         # Clean up the socket.
         s.close()
