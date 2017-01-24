@@ -72,33 +72,39 @@ class Player:
                     boardCards.append(data[3+i])
                     
                 numLastActions = int(data[3+numBoardCards])
-                print numLastActions
-                #Collect last actions, the packet wasn't returning all of them
+                lastActions = []
                 for i in range(0,numLastActions):
                     lastActions.append(data[4+numBoardCards+i])
-                numLegalActions = int(data[4+numBoardCards+numLastActions])
-                print lastActions
+                    
+                switched = False
+        
+                for i in range(0,len(lastActions)):
+                    if lastActions[i].find('DISCARD:') != -1:
+                        switched = True
+                        break;
+                
+                if switched:
+                    discardAction = lastActions[i]
+                    if discardAction.count(':') == 3: #shows it was this robot that switched
+                        #DISCARD:oo:NN:Player..
+                        oldCard = discardAction[8:10]
+                        newCard = discardAction[11:13]
+                        myHand[myHand.index(oldCard)] = newCard
+                
                 numLegalActions = int(data[4+numBoardCards+numLastActions])
                 legalActions = []
                 for i in range(0,numLegalActions):
                     legalActions.append(data[5+i])
-                # calls function defined in other python file
+                    
                 action = 'CHECK\n'
+                history = hist.display_stats()
+                
                 if numBoardCards == 0 : #preflop
                     action = preflop.getaction(myHand,data)
+                else:
+                    action = strat.getAction(myHand,boardCards,legalActions,lastActions,history,switched)
+                    
                 s.send(action)
-                history = hist.display_stats()
-                action = strat.getAction(myHand,boardCards,legalActions,lastActions,history)
-				#elif numBoardCards == 3 : #flop
-					#action = ...m
-				#elif numBoardCards == 4: #turn
-					
-				#elif numBoardCards == 5: #river
-						
-				#else:
-					#something broke 
-					
-                
                 
             if word == "HANDOVER":
                 PandL = int(data[2])
