@@ -3,6 +3,7 @@ import socket
 import sys
 import prefloplogic as preflop
 import historian as hist
+import strategy as strat
 """
 Simple example pokerbot, written in python.
 
@@ -86,8 +87,10 @@ class Player:
                 if numBoardCards == 0 : #preflop
                     action = preflop.getaction(myHand,data)
                 s.send(action)
+                history = hist.display_stats()
+                action = strat.getAction(myHand,boardCards,legalActions,lastActions,history)
 				#elif numBoardCards == 3 : #flop
-					#action = ...
+					#action = ...m
 				#elif numBoardCards == 4: #turn
 					
 				#elif numBoardCards == 5: #river
@@ -110,9 +113,10 @@ class Player:
 			lastActions.append(data[5+numBoardCards+i])
 		print lastActions
 		hist.update(lastActions)                    
-		print hist.display_stats()	
+		history = hist.display_stats()	
 		timeBank = data[5+numBoardCards+numLastActions]
-                lastActions = []                
+                lastActions = []           
+                
             if word == "KEYVALUE" :
 		key = data[1]
 		value = data[2]
