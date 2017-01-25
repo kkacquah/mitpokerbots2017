@@ -15,7 +15,7 @@ PocketAces v0.1a
 """
 
 class Player:
-    
+        
     def run(self, input_socket):
         firstround = True
         # Get a file-object for reading packets from the socket.
@@ -66,16 +66,20 @@ class Player:
 		lastActions = []
     
             if word == "GETACTION":
+                print 'data is ' + str(data)
                 numBoardCards = int(data[2])
                 boardCards = []
                 for i in range(0,numBoardCards):
                     boardCards.append(data[3+i])
-                    
+                
+                print 'data is ' + str(data)
+                
                 numLastActions = int(data[3+numBoardCards])
                 lastActions = []
                 for i in range(0,numLastActions):
                     lastActions.append(data[4+numBoardCards+i])
                     
+                print 'last are ' + str(lastActions)
                 switched = False
         
                 for i in range(0,len(lastActions)):
@@ -91,11 +95,12 @@ class Player:
                         newCard = discardAction[11:13]
                         myHand[myHand.index(oldCard)] = newCard
                 
+                
                 numLegalActions = int(data[4+numBoardCards+numLastActions])
                 legalActions = []
                 for i in range(0,numLegalActions):
                     legalActions.append(data[5+i])
-                    
+                print 'legal are ' + str(legalActions)
                 action = 'CHECK\n'
                 history = hist.display_stats()
                 

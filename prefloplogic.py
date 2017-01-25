@@ -40,11 +40,11 @@ def getaction(myHand,data):
 			# next line splits BET:minBet:maxBet action into its components,
 			# then extracts the maxBet so we can go all in
 			maxBet = data[canIDoThis('BET',data)].split(':')[2]
-			return 'BET:'+maxBet+'\n'
+			#return 'BET:'+maxBet+'\n'
 		elif canIDoThis('RAISE',data)>-1:
 			maxRaise = data[canIDoThis('RAISE',data)].split(':')[2]
-			return 'RAISE:'+maxRaise+'\n'
-		elif canIDoThis('CALL',data)>-1:
+			#return 'RAISE:'+maxRaise+'\n'
+		if canIDoThis('CALL',data)>-1:
 			return 'CALL\n'
 		else: 
 			return 'CHECK\n'
