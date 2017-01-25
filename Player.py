@@ -66,7 +66,7 @@ class Player:
 		lastActions = []
     
             if word == "GETACTION":
-                print 'my hand is: ' + str(myHand)
+                
                 print 'data is: ' + str(data)
                 numBoardCards = int(data[2])
                 boardCards = []
@@ -83,8 +83,8 @@ class Player:
                 print 'last are ' + str(lastActions)
                 switched = False
         
-                for i in range(0,len(lastActions)):
-                    if lastActions[i].find('DISCARD:') != -1:
+                for i in range(0,len(lastActions)): #check if I discarded
+                    if lastActions[i].find('DISCARD:') != -1 and lastActions[i].find(myName) != -1:
                         switched = True
                         break;
                 
@@ -102,6 +102,8 @@ class Player:
                 for i in range(0,numLegalActions):
                     legalActions.append(data[5+numBoardCards+numLastActions+i])
                 print 'legal are ' + str(legalActions)
+                print 'my hand is: ' + str(myHand)
+                
                 action = 'CHECK\n'
                 history = hist.display_stats()
                 
