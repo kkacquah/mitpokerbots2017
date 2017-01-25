@@ -61,18 +61,19 @@ class Player:
 		myHand = [data[3],data[4]]
 		profits = data[5]
 		#timeBank = data[7]
-		print myHand
+		print 'my hand is:' + str(myHand)
 		print hist.display_stats()
 		lastActions = []
     
             if word == "GETACTION":
-                print 'data is ' + str(data)
+                print 'my hand is: ' + str(myHand)
+                print 'data is: ' + str(data)
                 numBoardCards = int(data[2])
                 boardCards = []
                 for i in range(0,numBoardCards):
                     boardCards.append(data[3+i])
                 
-                print 'data is ' + str(data)
+                print 'boardCards is ' + str(boardCards)
                 
                 numLastActions = int(data[3+numBoardCards])
                 lastActions = []
@@ -99,7 +100,7 @@ class Player:
                 numLegalActions = int(data[4+numBoardCards+numLastActions])
                 legalActions = []
                 for i in range(0,numLegalActions):
-                    legalActions.append(data[5+i])
+                    legalActions.append(data[5+numBoardCards+numLastActions+i])
                 print 'legal are ' + str(legalActions)
                 action = 'CHECK\n'
                 history = hist.display_stats()

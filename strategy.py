@@ -31,10 +31,14 @@ def getAction(myHand,boardCards,legalActions,lastActions,history,switched):
     data['score'] = score
     #name = Eval.class_to_string(score) #if we want to know what it's called 'Straight'
 
-    if switched or hasAction("DEAL",lastActions) or len(boardCards) <= 3 or data.get('prob',0.0) == 0.0: #new cards added or hand switched
+    if switched or hasAction("DEAL",lastActions) or len(boardCards) < 3 or data.get('prob',0.0) == 0.0: #new cards added or hand switched
         if switched:
+            print 'card was switched'
             updateDeck(hand,board)
+        print 'calculating prob'
         probabilityOfWin(hand,board,score,Eval)
+    else:
+        print 'prob already calculated'
     
     prob = data.get('prob',0.0)
     print 'prob det as ' + str(prob)
@@ -43,12 +47,12 @@ def getAction(myHand,boardCards,legalActions,lastActions,history,switched):
         print 'I have discard option my score is ' + str(score)
         print 'Averages are ' + str(scores)
         goFor = choose([score]+scores)
-        print 'so I choose' + str(goFor)
+        print 'so I choose ' + str(goFor)
         
         if goFor == 0:
             return 'CHECK\n'
         else:
-            return 'DISCARD:'+myHand[goFor - 1]
+            return 'DISCARD:'+myHand[goFor - 1]+'\n'
 
     elif not hasAction("CHECK",legalActions):  #means the person has bet #assume BET, RAISE,CALL,FOLD
         print 'cp 1'
@@ -62,20 +66,20 @@ def getAction(myHand,boardCards,legalActions,lastActions,history,switched):
                 print 'cp 4'
                 scores = checkMyOdds(board,hand,Eval)
                 print 'average score can be' + str(scores)
-                if (score - scores[2]) < 400: #average change by switching is low
+                if (scores[2] - score) > -700: #average change by switching is low
                     return 'FOLD\n'
 
         if prob > 60 :
             print 'cp 3'
             if prob > 80:
                 print 'My odds GREAT'
-                return 'RAISE:#\n' # must fix with amount to raise
+                return 'RAISE:10\n' # must fix with amount to raise
 
             scores = checkMyOdds(board,hand,Eval)
             print 'cp 5'
             print 'average score can be' + str(scores)
-            if (score - scores[2]) > 200: #one more card will give even better chance
-                return 'RAISE\n'
+            if (scores[2] - score) < -200: #one more card will give even better chance
+                return 'RAISE:10\n'
 
         return 'CALL\n'
 
@@ -84,17 +88,17 @@ def getAction(myHand,boardCards,legalActions,lastActions,history,switched):
         print 'cp 6'
         if prob > 65:
             print 'cp 7'
-            return 'BET:#\n' #fix later
+            return 'BET:10\n' #fix later
 
         return 'CHECK\n'
 
 def hasAction(act,actions):
-    print "possibile actions are" + str(actions)
+    print "list of actions are: " + str(actions)
     for action in actions:
-        print "this action is" + str(action)
         if action.find(act) != -1:
-            print "has wanted act"
+            print "has wanted act: " + str(act)
             return True
+    print "doesn't have wanted act: " + str(act)
     return False
 
 def checkMyOdds(board,hand,Eval):
@@ -111,13 +115,13 @@ def choose(scores):
     firstAverage = scores[1]
     secondAverage = scores[2]
 
-    if currentScore >= firstAverage:
-        if currentScore >= secondAverage:
+    if currentScore <= firstAverage:
+        if currentScore <= secondAverage:
             return 0 #current largest (or equal)
         else:
             return 2 #removing second gives best odds
     else:
-        if firstAverage >= secondAverage:
+        if firstAverage <= secondAverage:
             return 1 #remove first is the best
         else:
             return 2 #remove second is the best
@@ -138,16 +142,19 @@ def getAverage(index,deck,hand,board,Eval):
 def probabilityOfWin(hand,board,score,Eval):
     deck = data.get("deck",fillDeck(board,hand)) #get already made deck or new
     shuffle(deck)
-    possibilities = (50-len(board))*(49-len(board))
+    possibilities = len(deck)*(len(deck)-1)
+    print 'deck length:' + str(len(deck))
     count = 0
 
     for i in range(0,len(deck)-1):
         for j in range(i+1,len(deck)):
             testHand = [deck[i],deck[j]]
             newScore = Eval.evaluate(board, testHand)
-            if score < newScore:
-                count +=1 #would win against random hand
+            if score <= newScore:
+                count +=2 #would win against random hand
 
+    print 'poss beat:' + str(count)
+    print 'poss total:' + str(possibilities)
     prob = float(count)*100/possibilities
     data['prob'] = prob
     #print 'Probability is' + str(prob)
@@ -182,6 +189,13 @@ def updateDeck(hand,board):
     for card in hand:
         if card in deck: #make sure card hasn't been removed
             deck.remove(card)
+            
+    for card in board:
+        if card in deck: #make sure card hasn't been removed
+            deck.remove(card)
+    
+    data['deck'] = deck
+    return deck
 
 
 
