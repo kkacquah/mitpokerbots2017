@@ -132,9 +132,9 @@ class Player:
                 history = hist.display_stats()    
                 timeBank = data[5+numBoardCards+numLastActions]   
                 
-            elif word == "KEYVALUE" :
-                key = data[1]
-                value = data[2]
+            #elif word == "KEYVALUE" :
+                #key = data[1]
+                #value = data[2]
                 #now store/ use this somehow
     
             elif word == "REQUESTKEYVALUES":
@@ -142,6 +142,8 @@ class Player:
                 # Send FINISH to indicate you're done.
                 
                 #s.send("PUT key value") #for each pair
+                s.send("FINISH\n")
+            else:
                 s.send("FINISH\n")
                 
         # Clean up the socket.
