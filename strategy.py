@@ -14,7 +14,7 @@ data['prob'] = 0.0
 data['deck'] = []
 data['score'] = 0
 
-def getAction(myHand,boardCards,legalActions,lastActions,history,switched):
+def getAction(myHand,boardCards,legalActions,lastActions,history,switched,button):
 
     board = []
     for card in boardCards:
@@ -24,6 +24,9 @@ def getAction(myHand,boardCards,legalActions,lastActions,history,switched):
     deck = data.get('deck',[])
     if len(deck) <= 1:
         fillDeck(board,hand)
+    
+    if len(board) == 0:
+        return preflop(myHand,legalActions,lastActions,history,button)
 
     Eval = Evaluator()
     score = Eval.evaluate(board, hand)
@@ -31,7 +34,7 @@ def getAction(myHand,boardCards,legalActions,lastActions,history,switched):
     data['score'] = score
     #name = Eval.class_to_string(score) #if we want to know what it's called 'Straight'
 
-    if switched or hasAction("DEAL",lastActions) != -1 or len(boardCards) < 3 or data.get('prob',0.0) == 0.0: #new cards added or hand switched
+    if switched or hasAction("DEAL",lastActions) != -1 or data.get('prob',0.0) == 0.0: #new cards added or hand switched
         if switched:
             print 'card was switched'
             updateDeck(hand,board)
@@ -42,6 +45,7 @@ def getAction(myHand,boardCards,legalActions,lastActions,history,switched):
     
     prob = data.get('prob',0.0)
     print 'prob det as ' + str(prob)
+         
     if hasAction("DISCARD",legalActions) != -1: #means at flop or turn and can discard card
         scores = checkMyOdds(board,hand,Eval)
         print 'I have discard option my score is ' + str(score)
@@ -99,10 +103,53 @@ def getAction(myHand,boardCards,legalActions,lastActions,history,switched):
             print 'bets: ' + str(bets)
             
             bet = (2*int(bets[1])+int(bets[2]))/3
-            return 'BET:'+ str(bet) + '\n' #fix later
+            return 'BET:'+ str(bet) + '\n' 
 
         return 'CHECK\n'
-
+        
+def preflop(myHand,legalActions,lastActions,history,button):
+    prob = 50 # I dont think deuces works for two cards
+    #instead will use
+    haveGoodCards = goodCards(myHand)
+    
+    if hasAction("POST",lastActions) != -1: #no bets yet
+        if button: #we go first
+            if haveGoodCards: #prob > 80: #only with really good cards
+                canRaise = hasAction("RAISE",legalActions)
+                raises = legalActions[canRaise].split(':')
+                raiseTo = (3*int(raises[1])+int(raises[2]))/4
+                return 'RAISE:'+ str(raiseTo) + '\n' 
+            return 'CALL\n'
+            
+        else: #button = false, other player went first, We go first after flop
+            if hasAction("CHECK",legalActions) == -1: #villain raised
+                return 'CALL\n'
+                
+            else:
+                if haveGoodCards:
+                    canRaise = hasAction("RAISE",legalActions)
+                    raises = legalActions[canRaise].split(':')
+                    raiseTo = (3*int(raises[1])+int(raises[2]))/4
+                    return 'RAISE:'+ str(raiseTo) + '\n' 
+                    
+            return 'CHECK\n'
+    else:
+        if button: #person bet after we called
+            return 'CALL\n'
+        else:
+            return 'CALL\n' #player rebet
+            
+def goodCards(myHand):
+    firstNum = myHand[0][0]
+    firstSuit = myHand[0][1]
+    secondNum = myHand[1][0]    
+    secondSuit = myHand[1][1]
+    
+    if firstNum == secondNum:
+        return True
+        
+    return False    
+    
 def hasAction(act,actions):
     print "list of actions are: " + str(actions)
     for i in range(0,len(actions)):

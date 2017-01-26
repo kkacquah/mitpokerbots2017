@@ -43,29 +43,29 @@ class Player:
             # When sending responses, terminate each response with a newline
             # character (\n) or your bot will hang!
             word = data[0]
+            
             if word == 'NEWGAME':
                 myName = data[1]
-				
+                
                 bigblind = data[4]
                 totalHands = data[5]
                 timeBank = data[6]
                 print 'NEWGAME start'
-                print myName
+                print 'my name is:' + myName
                 print bigblind
                 print totalHands
                 print timeBank
-                print 'packet end'
-            if word == 'NEWHAND':
-		handId = data[1] # number hand (1-1000)
-		button = data[2] #small blind (True/False) -> act firt preflop then second
-		myHand = [data[3],data[4]]
-		profits = data[5]
-		#timeBank = data[7]
-		print 'my hand is:' + str(myHand)
-		print hist.display_stats()
-		lastActions = []
+                
+            elif word == 'NEWHAND':
+                handId = data[1] # number hand (1-1000)
+                button = data[2] #small blind (True/False) -> act firt preflop then second
+                myHand = [data[3],data[4]]
+                profits = data[5]
+                #timeBank = data[7]
+                print 'my hand is:' + str(myHand)
+                print hist.display_stats()
     
-            if word == "GETACTION":
+            elif word == "GETACTION":
                 
                 print 'data is: ' + str(data)
                 numBoardCards = int(data[2])
@@ -107,42 +107,43 @@ class Player:
                 action = 'CHECK\n'
                 history = hist.display_stats()
                 
-                if numBoardCards == 0 : #preflop
-                    action = preflop.getaction(myHand,data)
-                else:
-                    action = strat.getAction(myHand,boardCards,legalActions,lastActions,history,switched)
+                #if numBoardCards == 0 : #preflop
+                 #   action = preflop.getaction(myHand,data)
+                #else:
+                action = strat.getAction(myHand,boardCards,legalActions,lastActions,history,switched,button)
                     
                 s.send(action)
                 
-            if word == "HANDOVER":
+            elif word == "HANDOVER":
                 PandL = int(data[2])
-		#indicates the conclusion of the current hand
-		numBoardCards = int(data[3])
-		boardCards = []
-		for i in range(numBoardCards):
-		    boardCards.append(data[4+i])
-		numLastActions = int(data[4+numBoardCards])
-		#Collect last actions, the packet wasn't returning all of them
+                #indicates the conclusion of the current hand
+                numBoardCards = int(data[3])
+                numLastActions = 0
+                boardCards = []
+                for i in range(numBoardCards):
+                    boardCards.append(data[4+i])
+                    numLastActions = int(data[4+numBoardCards])
+                #Collect last actions, the packet wasn't returning all of them
+                lastActions = []
                 for i in range(0,numLastActions):
-			lastActions.append(data[5+numBoardCards+i])
-		print lastActions
-		hist.update(lastActions)                    
-		history = hist.display_stats()	
-		timeBank = data[5+numBoardCards+numLastActions]
-                lastActions = []           
+                    lastActions.append(data[5+numBoardCards+i])
+                    print lastActions
+                #hist.update(lastActions)                    
+                history = hist.display_stats()    
+                timeBank = data[5+numBoardCards+numLastActions]   
                 
-            if word == "KEYVALUE" :
-		key = data[1]
-		value = data[2]
-		#now store/ use this somehow
+            elif word == "KEYVALUE" :
+                key = data[1]
+                value = data[2]
+                #now store/ use this somehow
     
-            if word == "REQUESTKEYVALUES":
+            elif word == "REQUESTKEYVALUES":
                 # At the end, the engine will allow your bot save key/value pairs.
                 # Send FINISH to indicate you're done.
                 
-		#s.send("PUT key value") #for each pair
-		s.send("FINISH\n")
-				
+                #s.send("PUT key value") #for each pair
+                s.send("FINISH\n")
+                
         # Clean up the socket.
         s.close()
 
