@@ -108,13 +108,11 @@ def getAction(myHand,boardCards,legalActions,lastActions,history,switched,button
         return 'CHECK\n'
         
 def preflop(myHand,legalActions,lastActions,history,button):
-    prob = 50 # I dont think deuces works for two cards
-    #instead will use
     haveGoodCards = goodCards(myHand)
     
     if hasAction("POST",lastActions) != -1: #no bets yet
         if button: #we go first
-            if haveGoodCards: #prob > 80: #only with really good cards
+            if haveGoodCards>3: #only with really good cards
                 canRaise = hasAction("RAISE",legalActions)
                 raises = legalActions[canRaise].split(':')
                 raiseTo = (3*int(raises[1])+int(raises[2]))/4
@@ -126,7 +124,7 @@ def preflop(myHand,legalActions,lastActions,history,button):
                 return 'CALL\n'
                 
             else:
-                if haveGoodCards:
+                if haveGoodCards > 4:
                     canRaise = hasAction("RAISE",legalActions)
                     raises = legalActions[canRaise].split(':')
                     raiseTo = (3*int(raises[1])+int(raises[2]))/4
@@ -140,15 +138,26 @@ def preflop(myHand,legalActions,lastActions,history,button):
             return 'CALL\n' #player rebet
             
 def goodCards(myHand):
+    cards = ['2','3','4','5','6','7','8','9','T','J','Q','K','A']
     firstNum = myHand[0][0]
     firstSuit = myHand[0][1]
     secondNum = myHand[1][0]    
     secondSuit = myHand[1][1]
     
     if firstNum == secondNum:
-        return True
-        
-    return False    
+        if cards.index(firstNum)>8:
+            return 4 # high pair
+        return 2 # pair
+    elif abs(firstNum - secondNum) < 4:
+        if firstSuit == secondSuit:
+            if min(cards.index(firstNum),cards.index(secondNum))>8:
+                return 6 #high straight flush
+            return 5 #straight flush
+        return 1 # ~ straight call 
+    elif firstSuit == secondSuit:
+        return 3 #flush
+      
+    return 0 #useless cards 
     
 def hasAction(act,actions):
     print "list of actions are: " + str(actions)
