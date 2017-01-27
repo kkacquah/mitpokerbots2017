@@ -14,7 +14,7 @@ data['prob'] = 0.0 #here so it is not always recalculated
 data['deck'] = [] #deck saved here so discarded card stays removed
 data['score'] = 0
 
-def getAction(myHand,boardCards,legalActions,FullLastActions,lastActions,history,switched,button):
+def getAction(myHand,boardCards,legalActions,FullLastActions,lastActions,history,switched,button,oppName):
 
 	board = []
 	for card in boardCards:
@@ -37,7 +37,7 @@ def getAction(myHand,boardCards,legalActions,FullLastActions,lastActions,history
 		if history['numHandsPlayed'] >= 100:
 			print "probwin: " + str(probWin)
 			if probWin <= 85:
-				prob = probWin * CalculateStrength(PastAggressiveEvents(FullLastActions),history)
+				prob = probWin * CalculateStrength(PastAggressiveEvents(FullLastActions,oppName),history)
 				print "prob: " + str(prob)
 			else:
 				prob = probWin
@@ -58,9 +58,11 @@ def getAction(myHand,boardCards,legalActions,FullLastActions,lastActions,history
 			return 'DISCARD:'+myHand[goFor - 1]+'\n'
 
 	elif hasAction("CHECK",legalActions) == -1:  #means the person has bet -> cannot CHECK #assume RAISE,CALL,FOLD
-		
-
-		if prob < 30:
+		RaiseIndex = hasAction("RAISE",lastActions)
+		BetIndex = hasAction("BET",lastActions)
+		PIPindex = max(RaiseIndex,BetIndex)
+		if prob < 50:
+			print "LEts fold!!!!"
 			if len(boardCards)>3: #on turn or river - no more chances to discard
 				return 'FOLD\n' #We're not going to win
 
@@ -268,25 +270,25 @@ def updateDeck(hand,board):
 	data['deck'] = deck
 	return deck
 
-def PastAggressiveEvents(lastActions):
+def PastAggressiveEvents(lastActions,oppName):
 
 	aggressiveEventsOccurred = []
 	for i in range(len(lastActions)):
 		lastActions[i] = lastActions[i].split(':')
 	for round in lastActions:
-		if (round[0] == 'RAISE' and round[-1] == 'player2') or (round[0] == 'BET' and round[-1] == 'player2'):
+		if (round[0] == 'RAISE' and round[-1] == oppName) or (round[0] == 'BET' and round[-1] == oppName):
 			aggressiveEventsOccurred.append('V_pfrRate')
 			break
 		elif round[0] == 'DEAL':
 			break
 	for round in lastActions:
-		if (round[0] == 'RAISE' and round[-1] == 'player2') or (round[0] == 'CALL' and round[-1] == 'player2') or (round[0] == 'BET' and round[-1] == 'player2'):
+		if (round[0] == 'RAISE' and round[-1] == oppName) or (round[0] == 'CALL' and round[-1] == oppName) or (round[0] == 'BET' and round[-1] == oppName):
 			aggressiveEventsOccurred.append('V_vpipRate')
 			break
 		elif round[0] == 'DEAL':
 			break
 	for round in lastActions:
-		if round[0] == 'BET' and round[-1] == 'player2':
+		if round[0] == 'BET' and round[-1] == oppName:
 			aggressiveEventsOccurred.append('V_3betRate')
 			break
 		elif round[0] == 'DEAL':
@@ -302,23 +304,26 @@ def PastAggressiveEvents(lastActions):
 	for i in range(len(lastActions)-1):
 		if round == ['DEAL','FLOP']:
 			for j in range(i,(len(lastActions))):
-				if lastActions[j][0] == 'BET' and lastActions[j][-1] == 'player2':
+				if lastActions[j][0] == 'BET' and lastActions[j][-1] == oppName:
 					aggressiveEventsOccurred.append('V_FlopCbetRate')           
 			break
 	for i in range(len(lastActions)-1):
 		if round == ['DEAL','TURN']:
 			for j in range(i,(len(lastActions))):
-				if lastActions[j][0] == 'BET' and lastActions[j][-1] == 'player2':
+				if lastActions[j][0] == 'BET' and lastActions[j][-1] == oppName:
 					aggressiveEventsOccurred.append('V_TurnCbetRate')            
 			break
 
 	return aggressiveEventsOccurred
 	
 def CalculateStrength(aggressiveEventsOccurred, stats):
-	aggressiveEvents = ['V_pfrRate','V_vpipRate','V_3betRate','V_seenTurnRate','V_FlopCbetRate','V_TurnCbetRate']
+	aggressiveEvents = ['V_pfrRate','V_vpipRate','V_seenTurnRate','V_FlopCbetRate','V_TurnCbetRate','HighVPIPRate','HigherVPIPRate']
+	
 	strengthDenominator = 0
+	print "aggression Freq is: " + str(stats['V_aggressionFreq'])
 	strength = 1+stats['V_aggressionFreq']
 	for event in aggressiveEvents:
+		print stats[event]
 		try:
 			strengthDenominator += 1/float(stats[event])
 
@@ -327,8 +332,8 @@ def CalculateStrength(aggressiveEventsOccurred, stats):
 
 	for event in aggressiveEventsOccurred:
 			try:        
-				strength -= ((1/float(stats[event]))/float(strengthDenominator))*(1+stats['V_aggressionFreq'])
+				strength -= ((1/float(stats[event]))/float(strengthDenominator))
 			except ZeroDivisionError:
 				strength += 0
-	
 	return strength
+

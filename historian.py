@@ -1,3 +1,4 @@
+
 #Historian Class
 #Global Variables
 stats = dict()
@@ -12,8 +13,6 @@ stats['loseAverage'] = 0 #Your win rate
 #A prefix of V_ denotes the villain, a prefix of H_ denotes the hero
 stats['V_pfrCount']= 0#pre-flop raise
 stats['V_pfrRate']= 0.0
-stats['V_3betCount']= 0#pre-flop raise
-stats['V_3betRate']= 0.0
 stats['V_vpipCount'] = 0#call or raise pre-flop
 stats['V_vpipRate'] = 0.0
 stats['V_initFoldCount'] = 0#related to vpip, counts when they don't play their hand
@@ -51,18 +50,24 @@ stats['V_BetCount'] = 0
 stats['V_CallCount'] = 0
 stats['V_RaiseCount'] = 0
 stats['V_FoldCount'] = 0
-
+stats['AverageVPIPAll'] = 0.0
+stats['HigherVPIPCountRate'] = 0.0
+stats['HighVPIPCountRate'] = 0.0
+stats['HigherVPIPCount'] = 0
+stats['HighVPIPCount'] = 0
+stats['TotVPIPAll'] = 0
+stats['CountVPIPAll'] = 0
 
 aggressiveEvents = ['V_pfrRate','V_vpipRate','V_3betRate','V_seenFlopRate','V_seenTurnRate','V_FlopCbetRate','V_TurnCbetRate']
 
 
-def update(lastActions):
+def update(lastActions,myName,oppName):
 	for i in range(len(lastActions)):
 		lastActions[i] = lastActions[i].split(':')
 	outcome = lastActions[-1]
 	
 	stats['numHandsPlayed']+=1
-	if outcome[-1] == 'player1':
+	if outcome[-1] == myName:
 		stats['winCount']+=1
 		stats['winAverage']= (stats['winAverage']*stats['numHandsPlayed'] + int(outcome[1]))/float(stats['numHandsPlayed'])
 		stats['winRate'] = stats['winCount']/float(stats['numHandsPlayed'])
@@ -72,7 +77,7 @@ def update(lastActions):
 	#Pre-flop raise recorder
 	for round in lastActions:
 
-		if (round[0] == 'RAISE' and round[-1] == 'player2') or (round[0] == 'BET' and round[-1] == 'player2'):
+		if (round[0] == 'RAISE' and round[-1] == oppName) or (round[0] == 'BET' and round[-1] == oppName):
 			stats['V_pfrCount'] += 1
 			stats['V_pfrRate'] = stats['V_pfrCount']/float(stats['numHandsPlayed'])
 			
@@ -82,7 +87,7 @@ def update(lastActions):
 
 	#Init fold rate record
 	for round in lastActions:
-		if (round[0] == 'RAISE' and round[-1] == 'player2') or (round[0] == 'CALL' and round[-1] == 'player2'):
+		if (round[0] == 'RAISE' and round[-1] == oppName) or (round[0] == 'CALL' and round[-1] == oppName):
 			stats['V_initFoldCount'] += 1
 			stats['V_initFoldRate'] = stats['V_initFoldCount']/float(stats['numHandsPlayed'])
 		elif round[0] == 'DEAL':
@@ -94,7 +99,7 @@ def update(lastActions):
 	#Init fold rate record	
 	#VPIP recorder
 	for round in lastActions:
-		if (round[0] == 'RAISE' and round[-1] == 'player2') or (round[0] == 'CALL' and round[-1] == 'player2') or (round[0] == 'BET' and round[-1] == 'player2'):
+		if (round[0] == 'RAISE' and round[-1] == oppName) or (round[0] == 'CALL' and round[-1] == oppName) or (round[0] == 'BET' and round[-1] == oppName):
 
 			stats['V_vpipCount'] += 1
 			stats['V_vpipRate'] = stats['V_vpipCount']/float(stats['numHandsPlayed'])
@@ -105,45 +110,38 @@ def update(lastActions):
 			break
 	#3bet raise recorder
 	for round in lastActions:
-		if round[0] == 'RAISE' and round[-1] == 'player2':
+		if round[0] == 'RAISE' and round[-1] == oppName:
 			stats['V_pfrCount'] += 1
 			stats['V_pfrRate'] = stats['V_pfrCount']/float(stats['numHandsPlayed'])
 
 			stats['V_initFoldCount'] += 1
 			stats['V_initFoldRate'] = stats['V_initFoldCount']/float(stats['numHandsPlayed'])
 			break
-	#3bet raise recorder
-	for round in lastActions:
-		if round[0] == 'BET' and round[-1] == 'player2':
-			stats['V_3betCount'] += 1
-			stats['V_3betRate'] = stats['V_3betCount']/float(stats['numHandsPlayed'])
-			break
-		elif round[0] == 'DEAL':
-			break
+
 	#3bet raise recorder
 
 	#Fold to pfr recorder
 	for i in range(len(lastActions)-1):
-		if lastActions[i][0] == 'RAISE' and lastActions[i][-1] == 'player1' and lastActions[i+1][0] == 'FOLD':
+		if lastActions[i][0] == 'RAISE' and lastActions[i][-1] == myName and lastActions[i+1][0] == 'FOLD':
 			stats['V_pfrFoldCount'] += 1
 			stats['V_pfrFoldRate'] = stats['V_pfrFoldCount']/float(stats['numHandsPlayed'])
 		elif round[0] == 'DEAL':
 			break
 	#Fold to 3bet reraise recorder
 	for i in range(len(lastActions)-1):
-		if lastActions[i][0] == 'RAISE' and lastActions[i][-1] == 'player2' and lastActions[i+1][0] == 'RAISE' and lastActions[i+2][0] == 'FOLD':
+		if lastActions[i][0] == 'RAISE' and lastActions[i][-1] == oppName and lastActions[i+1][0] == 'RAISE' and lastActions[i+2][0] == 'FOLD':
 			stats['V_pfrrFoldCount'] += 1
 			stats['V_pfrrFoldRate'] = stats['V_pfrrFoldCount']/float(stats['numHandsPlayed'])
 		elif round[0] == 'DEAL':
 			break
 	for round in lastActions:
-		if round[0] == 'RAISE' and round[-1] == 'player2':
+		if round[0] == 'RAISE' and round[-1] == oppName:
 			stats['V_RaiseCount'] += 1
-		elif round[0] == 'FOLD' and round[-1] == 'player2':
+		elif round[0] == 'FOLD' and round[-1] == oppName:
 			stats['V_FoldCount'] += 1
-		elif round[0] == 'CALL' and round[-1] == 'player2':
+		elif round[0] == 'CALL' and round[-1] == oppName:
 			stats['V_CallCount'] += 1
-		elif round[0] == 'BET' and round[-1] == 'player2':
+		elif round[0] == 'BET' and round[-1] == oppName:
 			stats['V_BetCount'] += 1
 	for i in range(len(lastActions)-1):
 		if lastActions[i][0] == 'DEAL' and lastActions[i][-1] == 'FLOP':
@@ -166,63 +164,84 @@ def update(lastActions):
 			stats['V_seenTurnCount'] += 1
 			stats['V_seenTurnRate'] = stats['V_seenTurnCount']/float(stats['numHandsPlayed'])
 			break
+	#Flop C_BET count
 	for i in range(len(lastActions)-1):
-		if round == ['DEAL','FLOP']:
+		if lastActions[i] == ['DEAL','FLOP']:
+			print "entered loop"
 			for j in range(i,(len(lastActions))):
-				print lastActions[j]
-				if lastActions[j][0] == 'BET' and lastActions[j][-1] == 'player2':
+				print "Flop c_bet lastActions[j]: " + str(lastActions[j])
+				if lastActions[j][0] == 'BET' and lastActions[j][-1] == oppName:
 					stats['V_FlopCbetCount'] += 1
-					stats['V_FlopCbetRate'] = stats['V_FlopCbetCount']/float(stats['numHandsPlayed'])            
+					stats['V_FlopCbetRate'] = stats['V_FlopCbetCount']/float(stats['numHandsPlayed'])
+				if lastActions[j] == ['DEAL','TURN']:
+					break           
 			break
+	#Turn C_BET count
 	for i in range(len(lastActions)-1):
-		if round == ['DEAL','TURN']:
+		if lastActions[i] == ['DEAL','TURN']:
 			for j in range(i,(len(lastActions))):
-				print lastActions[j]
-				if lastActions[j][0] == 'BET' and lastActions[j][-1] == 'player2':
+				if lastActions[j][0] == 'BET' and lastActions[j][-1] == oppName:
 					stats['V_TurnCbetCount'] += 1
 					stats['V_TurnCbetRate'] = stats['V_TurnCbetCount']/float(stats['numHandsPlayed'])            
 			break
 	for i in range(len(lastActions)-1):
-		if round == ['DEAL','FLOP']:
+		if lastActions[i] == ['DEAL','FLOP']:
 			for j in range(i,(len(lastActions))):
-				print lastActions[j]
-				if lastActions[j][0] == 'BET' and lastActions[j][-1] == 'player1':
-					if lastActions[j+1][0] == 'FOLD' and lastActions[j+1][-1] == 'player2':
+				if lastActions[j][0] == 'BET' and lastActions[j][-1] == myName:
+					if lastActions[j+1][0] == 'FOLD' and lastActions[j+1][-1] == oppName:
 						stats['V_ftoFlopCbetCount'] += 1
 						stats['V_ftoFlopCbetRate'] = stats['V_ftoFlopCbetCount']/float(stats['numHandsPlayed'])            
+					if lastActions[j] == ['DEAL','RIVER']:
+						break     
 			break
 	for i in range(len(lastActions)-1):
-		if round == ['DEAL','TURN']:
+		if lastActions[i] == ['DEAL','TURN']:
 			for j in range(i,(len(lastActions))):
-				print lastActions[j]
-				if lastActions[j][0] == 'BET' and lastActions[j][-1] == 'player1':
-					if lastActions[j+1][0] == 'FOLD' and lastActions[j+1][-1] == 'player2':
+				if lastActions[j][0] == 'BET' and lastActions[j][-1] == myName:
+					if lastActions[j+1][0] == 'FOLD' and lastActions[j+1][-1] == oppName:
 						stats['V_ftoTurnCbetCount'] += 1
 						stats['V_ftoTurnCbetRate'] = stats['V_ftoTurnCbetCount']/float(stats['numHandsPlayed'])            
 			break
    
 	for round in lastActions:
-		if round[0] == 'DISCARD' and round[-1] == 'player2':
+		if round[0] == 'DISCARD' and round[-1] == oppName:
 			stats['V_FlopDiscardCount'] += 1
 			stats['V_FlopDiscardRate'] = stats['V_FlopDiscardCount']/float(stats['numHandsPlayed'])            
 			break
 		elif round == ['DEAL','TURN']:
 			break
 	for round in lastActions:
-		if round[0] == 'DISCARD' and round[-1] == 'player2':
+		if round[0] == 'DISCARD' and round[-1] == oppName:
 			stats['V_TurnDiscardCount'] += 1
 			stats['V_TurnDiscardRate'] = stats['V_TurnDiscardCount']/float(stats['numHandsPlayed'])
-			
-			break
 		elif round == ['DEAL','RIVER']:
 			break
+	for round in lastActions:
+		if (round[0] == 'RAISE' and round[-1] == oppName) or (round[0] == 'BET' and round[-1] == oppName):
+			stats['TotVPIPAll'] += int(round[1])
+			stats['CountVPIPAll'] += 1
+	for round in lastActions:
+		if (round[0] == 'RAISE' and round[-1] == oppName) or (round[0] == 'BET' and round[-1] == oppName):
+			if (int(round[1]) >= stats['AverageVPIPAll']*1.2):
+				stats['HighVPIPCount'] += 1
+				stats['HighVPIPRate'] = stats['HighVPIPCount']/float(stats['numHandsPlayed'])
+	for round in lastActions:
+		if (round[0] == 'RAISE' and round[-1] == oppName) or (round[0] == 'BET' and round[-1] == oppName):
+			if (int(round[1]) >= stats['AverageVPIPAll']*1.8):
+				stats['HigherVPIPCount'] += 1
+				stats['HigherVPIPRate'] = stats['HigherVPIPCount']/float(stats['numHandsPlayed'])
+
 	try:
 		stats['V_aggressionFactor'] = (stats['V_BetCount'] + stats['V_RaiseCount'])/float(stats['V_CallCount'])
 	except ZeroDivisionError:
 		stats['V_aggressionFactor'] = 0
 	try:
-		stats['V_aggressionFreq'] = (stats['V_BetCount'] + stats['V_RaiseCount'])/float(stats['V_RaiseCount'] + stats['V_FoldCount'] + stats['V_CallCount'] + stats['V_BetCount'])*100
+		stats['V_aggressionFreq'] = (stats['V_BetCount'] + stats['V_RaiseCount'])/float(stats['V_RaiseCount'] + stats['V_FoldCount'] + stats['V_CallCount'] + stats['V_BetCount'])
 	except ZeroDivisionError:
 		stats['V_aggressionFactor'] = 0
+	try:
+		stats['AverageVPIPAll'] = stats['TotVPIPAll']/float(stats['CountVPIPAll'])
+	except ZeroDivisionError:
+		stats['AverageVPIPAll'] = 0	
 def display_stats():
 	return stats  

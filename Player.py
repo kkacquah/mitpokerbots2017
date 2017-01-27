@@ -46,7 +46,7 @@ class Player:
 			
 			if word == 'NEWGAME':
 				myName = data[1]
-				
+				oppName = data[2]
 				bigblind = data[4]
 				totalHands = data[5]
 				timeBank = data[6]
@@ -102,7 +102,7 @@ class Player:
 				print 'my hand is: ' + str(myHand)
 				
 				history = hist.display_stats()
-				action = strat.getAction(myHand,boardCards,legalActions,fullLastActions[:],lastActions[:],history,switched,button)
+				action = strat.getAction(myHand,boardCards,legalActions,fullLastActions[:],lastActions[:],history,switched,button,oppName)
 					
 				s.send(action)
 				
@@ -120,7 +120,7 @@ class Player:
 					fullLastActions.append(data[5+numBoardCards+i])
 					print fullLastActions
 				print "Full last actions are:" +str(fullLastActions)
-				hist.update(fullLastActions[:])                    
+				hist.update(fullLastActions[:],myName,oppName)                    
 				history = hist.display_stats()
 				print history 
 				timeBank = data[5+numBoardCards+numLastActions]   
