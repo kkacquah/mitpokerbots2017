@@ -1,7 +1,7 @@
 import argparse
 import socket
 import sys
-import prefloplogic as preflop
+#import prefloplogic as preflop
 import historian as hist
 import strategy as strat
 """
@@ -11,7 +11,7 @@ This is an example of a bare bones pokerbot. It only sets up the socket
 necessary to connect with the engine and then always returns the same action.
 It is meant as an example of how a pokerbot should communicate with the engine.
 
-PocketAces v0.1a
+PocketAces v0.3b
 """
 
 class Player:
@@ -81,35 +81,27 @@ class Player:
                     lastActions.append(data[4+numBoardCards+i])
                     
                 print 'last are ' + str(lastActions)
-                switched = False
-        
+                
+                switched = False        
                 for i in range(0,len(lastActions)): #check if I discarded
                     if lastActions[i].find('DISCARD:') != -1 and lastActions[i].find(myName) != -1:
                         switched = True
-                        break;
-                
-                if switched:
-                    discardAction = lastActions[i]
-                    if discardAction.count(':') == 3: #shows it was this robot that switched
+                        discardAction = lastActions[i]
                         #DISCARD:oo:NN:Player..
                         oldCard = discardAction[8:10]
                         newCard = discardAction[11:13]
                         myHand[myHand.index(oldCard)] = newCard
-                
+                        break;                                        
                 
                 numLegalActions = int(data[4+numBoardCards+numLastActions])
                 legalActions = []
                 for i in range(0,numLegalActions):
                     legalActions.append(data[5+numBoardCards+numLastActions+i])
                 print 'legal are ' + str(legalActions)
+                
                 print 'my hand is: ' + str(myHand)
                 
-                action = 'CHECK\n'
                 history = hist.display_stats()
-                
-                #if numBoardCards == 0 : #preflop
-                 #   action = preflop.getaction(myHand,data)
-                #else:
                 action = strat.getAction(myHand,boardCards,legalActions,lastActions,history,switched,button)
                     
                 s.send(action)
