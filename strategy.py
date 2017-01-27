@@ -42,8 +42,10 @@ def getAction(myHand,boardCards,legalActions,lastActions,history,switched,button
     
     score = data.get('score',10000)
     print 'score det as ' + str(score)
-    prob = data.get('prob',0.0)
-    print 'prob det as ' + str(prob)
+    probWin = data.get('prob',0.0)
+    print 'naive prob det as ' + str(probWin)
+    
+    prob = probWin * CalculateStrength(PastAggressiveEvents(lastActions),history) 
          
     if hasAction("DISCARD",legalActions) != -1: #means at flop or turn and can discard card
         scores = checkMyOdds(hand,board)
@@ -199,37 +201,22 @@ def checkMyOdds(hand,board):
 
     firstAverage = getAverage(0,deck[:],hand,board,Eval)
     secondAverage = getAverage(1,deck[:],hand,board,Eval)
-    switchScore = (firstAverage + secondAverage) / 2
 
-    return [firstAverage,secondAverage,switchScore]
+    return [firstAverage,secondAverage]
     
 def choose(scores):
     currentScore = scores[0]
     firstAverage = scores[1]
     secondAverage = scores[2]
-
-    if currentScore < firstAverage:
-        if currentScore < secondAverage:
-            return 0 #current best
-        else:
-            return 2 #removing second gives best odds
-    else:
-        if firstAverage <= secondAverage:
-            return 1 #remove first is the best
-        else:
-            return 2 #remove second is the best
-
-=======
     
-    max = max(currentScore,firstAverage,secondAverage)
-    if max == currentScore:
+    smallScore = min(currentScore,firstAverage,secondAverage)
+    if smallScore == currentScore:
         return 0
-    elif max == firstAverage:
+    elif smallScore == firstAverage:
         return 1
-    elif max == secondAverage:
+    else:
         return 2
     
->>>>>>> origin/Ken's-Strategy-Branch
 def getAverage(index,deck,hand,board,Eval):
     total = 0
     count = 0
@@ -298,21 +285,6 @@ def updateDeck(hand,board):
     data['deck'] = deck
     return deck
 
-def calcScore(hand,board):
-    
-    return score
-
-
-
-
-
-
-=======
-            newScore = Eval.evaluate(board, testHand)
-            if score > newScore:
-                count +=1
-    print float(count)*100/possibilities
-    return float(count)*100/possibilities
 def PastAggressiveEvents(lastActions):
     aggressiveEventsOccurred = []
     for round in lastActions:
@@ -357,6 +329,7 @@ def PastAggressiveEvents(lastActions):
             break
 
     return aggressiveEventsOccurred
+    
 def CalculateStrength(aggressiveEventsOccurred, stats):
     aggressiveEvents = ['V_pfrRate','V_vpipRate','V_3betRate','V_seenFlopRate','V_seenTurnRate','V_FlopCbetRate','V_TurnCbetRate']
     strengthDenominator = 0
@@ -367,9 +340,3 @@ def CalculateStrength(aggressiveEventsOccurred, stats):
         strength -= stats[event]/float(strengthDenominator)
     return strength
         
-        
-        
-    
-    
-    
->>>>>>> origin/Ken's-Strategy-Branch
