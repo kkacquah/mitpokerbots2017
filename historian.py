@@ -52,15 +52,9 @@ stats['V_CallCount'] = 0
 stats['V_RaiseCount'] = 0
 stats['V_FoldCount'] = 0
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-aggressiveEventStatistics = ['V_pfrRate','V_vpipRate','V_ThreeBRate','V_seenFlopRate','V_seenTurnRate','V_cbetRate','V_TurnCbetRate']
-=======
+
 aggressiveEvents = ['V_pfrRate','V_vpipRate','V_3betRate','V_seenFlopRate','V_seenTurnRate','V_FlopCbetRate','V_TurnCbetRate']
->>>>>>> origin/Ken's-Strategy-Branch
-=======
-aggressiveEvents = ['V_pfrRate','V_vpipRate','V_3betRate','V_seenFlopRate','V_seenTurnRate','V_FlopCbetRate','V_TurnCbetRate']
->>>>>>> 89f6674a5a01a535c9147812c0bfa72190e52cbe
+
 
 def update(lastActions):
 	for i in range(len(lastActions)):
@@ -77,18 +71,15 @@ def update(lastActions):
 	#Break up rounds into lists
 	#Pre-flop raise recorder
 	for round in lastActions:
-<<<<<<< HEAD
-		if round[0] == 'RAISE' and round[-1] == 'player2':
-=======
+
 		if (round[0] == 'RAISE' and round[-1] == 'player2') or (round[0] == 'BET' and round[-1] == 'player2'):
->>>>>>> origin/Ken's-Strategy-Branch
 			stats['V_pfrCount'] += 1
 			stats['V_pfrRate'] = stats['V_pfrCount']/float(stats['numHandsPlayed'])
 			
 			break
 		elif round[0] == 'DEAL':
 			break
-<<<<<<< HEAD
+
 	#Init fold rate record
 	for round in lastActions:
 		if (round[0] == 'RAISE' and round[-1] == 'player2') or (round[0] == 'CALL' and round[-1] == 'player2'):
@@ -99,29 +90,25 @@ def update(lastActions):
 			
 			break
 			
-	#VPIP recorder
-	for round in lastActions:
-		if (round[0] == 'RAISE' and round[-1] == 'player2') or (round[0] == 'CALL' and round[-1] == 'player2'):
-=======
+
 	#Init fold rate record	
 	#VPIP recorder
 	for round in lastActions:
 		if (round[0] == 'RAISE' and round[-1] == 'player2') or (round[0] == 'CALL' and round[-1] == 'player2') or (round[0] == 'BET' and round[-1] == 'player2'):
->>>>>>> origin/Ken's-Strategy-Branch
+
 			stats['V_vpipCount'] += 1
 			stats['V_vpipRate'] = stats['V_vpipCount']/float(stats['numHandsPlayed'])
 			break
 		elif round[0] == 'DEAL':
 			#If the don't call or raise during the pre-flop then they folded
-<<<<<<< HEAD
-			
+
 			break
 	#3bet raise recorder
 	for round in lastActions:
 		if round[0] == 'RAISE' and round[-1] == 'player2':
 			stats['V_pfrCount'] += 1
 			stats['V_pfrRate'] = stats['V_pfrCount']/float(stats['numHandsPlayed'])
-=======
+
 			stats['V_initFoldCount'] += 1
 			stats['V_initFoldRate'] = stats['V_initFoldCount']/float(stats['numHandsPlayed'])
 			break
@@ -130,24 +117,12 @@ def update(lastActions):
 		if round[0] == 'BET' and round[-1] == 'player2':
 			stats['V_3betCount'] += 1
 			stats['V_3betRate'] = stats['V_3betCount']/float(stats['numHandsPlayed'])
->>>>>>> origin/Ken's-Strategy-Branch
 			break
 		elif round[0] == 'DEAL':
 			break
 	#3bet raise recorder
-<<<<<<< HEAD
-	for round in lastActions:
-		if round[0] == 'RAISE' and round[-1] == 'player2':
-			stats['V_ThreeBCount'] += 1
-			stats['V_ThreeBRate'] = stats['V_ThreeBCount']/float(stats['numHandsPlayed'])
-			break
-		elif round[0] == 'DEAL':
-			break
-	#Fold to 3bet raise recorder
-=======
-	
+
 	#Fold to pfr recorder
->>>>>>> origin/Ken's-Strategy-Branch
 	for i in range(len(lastActions)-1):
 		if lastActions[i][0] == 'RAISE' and lastActions[i][-1] == 'player1' and lastActions[i+1][0] == 'FOLD':
 			stats['V_pfrFoldCount'] += 1
@@ -186,14 +161,12 @@ def update(lastActions):
 			stats['V_seenFlopRate'] = stats['V_seenFlopCount']/float(stats['numHandsPlayed'])
 			break
 	for i in range(len(lastActions)-1):
-<<<<<<< HEAD
-=======
+
 		if lastActions[i][0] == 'DEAL' and lastActions[i][-1] == 'TURN':
 			stats['V_seenTurnCount'] += 1
 			stats['V_seenTurnRate'] = stats['V_seenTurnCount']/float(stats['numHandsPlayed'])
 			break
 	for i in range(len(lastActions)-1):
->>>>>>> origin/Ken's-Strategy-Branch
 		if round == ['DEAL','FLOP']:
 			for j in range(i,(len(lastActions))):
 				print lastActions[j]
