@@ -78,14 +78,10 @@ def update(lastActions):
 	#Pre-flop raise recorder
 	for round in lastActions:
 <<<<<<< HEAD
-<<<<<<< HEAD
 		if round[0] == 'RAISE' and round[-1] == 'player2':
 =======
 		if (round[0] == 'RAISE' and round[-1] == 'player2') or (round[0] == 'BET' and round[-1] == 'player2'):
 >>>>>>> origin/Ken's-Strategy-Branch
-=======
-		if (round[0] == 'RAISE' and round[-1] == 'player2') or (round[0] == 'BET' and round[-1] == 'player2'):
->>>>>>> 89f6674a5a01a535c9147812c0bfa72190e52cbe
 			stats['V_pfrCount'] += 1
 			stats['V_pfrRate'] = stats['V_pfrCount']/float(stats['numHandsPlayed'])
 			
