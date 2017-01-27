@@ -219,6 +219,17 @@ def choose(scores):
         else:
             return 2 #remove second is the best
 
+=======
+    
+    max = max(currentScore,firstAverage,secondAverage)
+    if max == currentScore:
+        return 0
+    elif max == firstAverage:
+        return 1
+    elif max == secondAverage:
+        return 2
+    
+>>>>>>> origin/Ken's-Strategy-Branch
 def getAverage(index,deck,hand,board,Eval):
     total = 0
     count = 0
@@ -296,3 +307,69 @@ def calcScore(hand,board):
 
 
 
+=======
+            newScore = Eval.evaluate(board, testHand)
+            if score > newScore:
+                count +=1
+    print float(count)*100/possibilities
+    return float(count)*100/possibilities
+def PastAggressiveEvents(lastActions):
+    aggressiveEventsOccurred = []
+    for round in lastActions:
+        if (round[0] == 'RAISE' and round[-1] == 'player2') or (round[0] == 'BET' and round[-1] == 'player2'):
+            aggressiveEvents.append('V_pfrCount')
+            break
+        elif round[0] == 'DEAL':
+            break
+    for round in lastActions:
+        if (round[0] == 'RAISE' and round[-1] == 'player2') or (round[0] == 'CALL' and round[-1] == 'player2') or (round[0] == 'BET' and round[-1] == 'player2'):
+            aggressiveEvents.append('V_vpipCount')
+            break
+        elif round[0] == 'DEAL':
+            break
+    for round in lastActions:
+        if round[0] == 'BET' and round[-1] == 'player2':
+            aggressiveEvents.append('V_3betCount')
+            break
+        elif round[0] == 'DEAL':
+            break
+    for i in range(len(lastActions)-1):
+        if lastActions[i][0] == 'DEAL' and lastActions[i][-1] == 'FLOP':
+            aggressiveEvents.append('V_seenFlopCount')
+            break
+    for i in range(len(lastActions)-1):
+        if lastActions[i][0] == 'DEAL' and lastActions[i][-1] == 'FLOP':
+            aggressiveEvents.append('V_seenTurnCount')
+            break
+    for i in range(len(lastActions)-1):
+        if round == ['DEAL','FLOP']:
+            for j in range(i,(len(lastActions))):
+                print lastActions[j]
+                if lastActions[j][0] == 'BET' and lastActions[j][-1] == 'player2':
+                    aggressiveEvents.append('V_FlopCbetCount')           
+            break
+    for i in range(len(lastActions)-1):
+        if round == ['DEAL','TURN']:
+            for j in range(i,(len(lastActions))):
+                print lastActions[j]
+                if lastActions[j][0] == 'BET' and lastActions[j][-1] == 'player2':
+                    aggressiveEvents.append('V_TurnCbetCount')            
+            break
+
+    return aggressiveEventsOccurred
+def CalculateStrength(aggressiveEventsOccurred, stats):
+    aggressiveEvents = ['V_pfrRate','V_vpipRate','V_3betRate','V_seenFlopRate','V_seenTurnRate','V_FlopCbetRate','V_TurnCbetRate']
+    strengthDenominator = 0
+    for event in aggressiveEvents:
+        strengthDenominator += stats[event]
+    strength = 1
+    for event in aggressiveEventsOccurred:
+        strength -= stats[event]/float(strengthDenominator)
+    return strength
+        
+        
+        
+    
+    
+    
+>>>>>>> origin/Ken's-Strategy-Branch
