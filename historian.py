@@ -69,10 +69,10 @@ def update(lastActions,myName,oppName):
 	stats['numHandsPlayed']+=1
 	if outcome[-1] == myName:
 		stats['winCount']+=1
-		stats['winAverage']= (stats['winAverage']*stats['numHandsPlayed'] + int(outcome[1]))/float(stats['numHandsPlayed'])
+		stats['winAverage']= (stats['winAverage']*stats['winCount'] + int(outcome[1]))/float(stats['winCount'])
 		stats['winRate'] = stats['winCount']/float(stats['numHandsPlayed'])
 	else:
-		stats['loseAverage'] = (stats['loseAverage']*stats['numHandsPlayed'] + int(outcome[1]))/float(stats['numHandsPlayed'])
+		stats['loseAverage'] = (stats['loseAverage']*(stats['numHandsPlayed']-stats['winCount']) + int(outcome[1]))/float(stats['numHandsPlayed']-stats['winCount'])
 	#Break up rounds into lists
 	#Pre-flop raise recorder
 	for round in lastActions:
@@ -167,9 +167,7 @@ def update(lastActions,myName,oppName):
 	#Flop C_BET count
 	for i in range(len(lastActions)-1):
 		if lastActions[i] == ['DEAL','FLOP']:
-			print "entered loop"
 			for j in range(i,(len(lastActions))):
-				print "Flop c_bet lastActions[j]: " + str(lastActions[j])
 				if lastActions[j][0] == 'BET' and lastActions[j][-1] == oppName:
 					stats['V_FlopCbetCount'] += 1
 					stats['V_FlopCbetRate'] = stats['V_FlopCbetCount']/float(stats['numHandsPlayed'])
