@@ -77,12 +77,22 @@ def getAction(myHand,boardCards,legalActions,FullLastActions,lastActions,history
 			raises = legalActions[canRaise].split(':')
 			
 			if prob > 80:
-				raiseTo = (int(raises[1])+2*int(raises[2]))/3 #close to max
-				return 'RAISE:'+str(raiseTo)+'\n'
+				if history['numHandsPlayed'] >= 100:
+					raiseTo = int(raises[1])*(2.5-((history['V_FoldCount'])/float(history['numHandsPlayed']))) #close to max
+				else:
+					raiseTo = int(raises[1])*1.7
+				if raiseTo >= raises[2]:
+					return 'RAISE:'+str(raises[2]) +'\n'
+				else:
+					return 'RAISE:'+str(raiseTo)+'\n'
 
 			scores = checkMyOdds(hand,board)
 			if (scores[1] - score) < 0 or (scores[0] - score) < 0: #have odds to increase more
-				raiseTo = (int(raises[1])+int(raises[2]))/2
+				raiseTo = int(raises[1])*1.7
+				if raiseTo > raises[2]:
+					return 'RAISE:'+str(raises[2]) +'\n'
+				else:
+					return 'RAISE:'+str(raiseTo)+'\n'
 				return 'RAISE:'+str(raiseTo)+'\n'
 
 		return 'CALL\n'
@@ -92,9 +102,14 @@ def getAction(myHand,boardCards,legalActions,FullLastActions,lastActions,history
 		canBet = hasAction("BET",legalActions)
 		if prob > 65 and canBet != -1:
 			bets = legalActions[canBet].split(':')
-			
-			bet = (2*int(bets[1])+int(bets[2]))/3
-			return 'BET:'+ str(bet) + '\n' 
+			if history['numHandsPlayed'] >= 100:
+					bet = int(bets[1])*(2.5-((history['V_FoldCount'])/float(history['numHandsPlayed']))-0.2)
+			else:
+					bet = int(bets[1])*1.5
+			if bet > bets[2]:
+				return 'BET:'+str(bets[2]) +'\n'
+			else:
+				return 'BET:'+str(bet)+'\n'
 
 		return 'CHECK\n'
 		
@@ -106,8 +121,14 @@ def preflop(myHand,legalActions,lastActions,history,button):
 			if haveGoodCards >= 5: #only with good cards
 				canRaise = hasAction("RAISE",legalActions)
 				raises = legalActions[canRaise].split(':')
-				raiseTo = ((15-haveGoodCards)*int(raises[1])+int(raises[2]))/(16-haveGoodCards) #increases as cards are better
-				return 'RAISE:'+ str(raiseTo) + '\n' 
+				if history['numHandsPlayed'] >= 100:
+					raiseTo = int(raises[1])*(1.75 - history['V_pfrFoldRate'])#increases as cards are better
+				else:
+					raiseTo = int(raises[1])*1.5
+				if raiseTo > raises[2]:
+					return 'RAISE:'+str(raises[2]) +'\n'
+				else:
+					return 'RAISE:'+str(raiseTo)+'\n' 
 			return 'CALL\n'
 			
 		else: #button = false, other player went first, We go first after flop
@@ -122,9 +143,11 @@ def preflop(myHand,legalActions,lastActions,history,button):
 				if haveGoodCards >= 4:
 					canRaise = hasAction("RAISE",legalActions)
 					raises = legalActions[canRaise].split(':')
-					raiseTo = ((13-haveGoodCards)*int(raises[1])+int(raises[2]))/(14-haveGoodCards) #increases as cards are better
-					return 'RAISE:'+ str(raiseTo) + '\n' 
-					
+					raiseTo = int(raises[1])*(1.75 - history['V_pfrFoldRate']) #increases as cards are better
+					if raiseTo > raises[2]:
+						return 'RAISE:'+str(raises[2]) +'\n'
+					else:
+						return 'RAISE:'+str(raiseTo)+'\n' 
 				return 'CHECK\n'
 				
 	else: #some action happened after post
@@ -317,7 +340,7 @@ def PastAggressiveEvents(lastActions,oppName):
 	return aggressiveEventsOccurred
 	
 def CalculateStrength(aggressiveEventsOccurred, stats):
-	aggressiveEvents = ['V_pfrRate','V_vpipRate','V_seenTurnRate','V_FlopCbetRate','V_TurnCbetRate','HighVPIPRate','HigherVPIPRate']
+	aggressiveEvents = ['V_pfrRate','V_vpipRate','V_seenTurnRate','V_FlopCbetRate','V_TurnCbetRate','HighVPIPRate','HigherVPIPRate',"AWPlog.txt",'potnetlog2.txt',"AWPlog2.txt","hurrikeyneslog4.txt"]
 	
 	strengthDenominator = 0
 	print "aggression Freq is: " + str(stats['V_aggressionFreq'])
