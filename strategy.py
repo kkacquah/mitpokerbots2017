@@ -317,7 +317,7 @@ def PastAggressiveEvents(lastActions,oppName):
 	return aggressiveEventsOccurred
 	
 def CalculateStrength(aggressiveEventsOccurred, stats):
-	aggressiveEvents = ['V_pfrRateWA','V_vpipRateWA','V_seenTurnRateWA','V_FlopCbetRateWA','V_TurnCbetRateWA','HighVPIPRateWA','HigherVPIPRateWA']
+	aggressiveEvents = ['V_pfrRateWA','V_vpipRateWA','V_seenFlopRateWA','V_seenTurnRateWA','V_FlopCbetRateWA','V_TurnCbetRateWA','HighVPIPRateWA','HigherVPIPRateWA']
 	
 	strengthDenominator = 0
 	strength = 1+stats['V_aggressionFreqWA']
