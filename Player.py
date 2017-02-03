@@ -66,7 +66,7 @@ class Player:
 				print hist.display_stats()
 				fullLastActions = []
 			elif word == "GETACTION":
-				
+				potSize = data[1]
 				print 'data is: ' + str(data)
 				numBoardCards = int(data[2])
 				boardCards = []
@@ -102,7 +102,7 @@ class Player:
 				print 'my hand is: ' + str(myHand)
 				
 				history = hist.display_stats()
-				action = strat.getAction(myHand,boardCards,legalActions,fullLastActions[:],lastActions[:],history,switched,button,oppName)
+				action = strat.getAction(myHand,boardCards,legalActions,fullLastActions[:],lastActions[:],history,switched,button,oppName,potSize)
 					
 				s.send(action)
 				
