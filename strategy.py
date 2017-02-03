@@ -34,9 +34,9 @@ def getAction(myHand,boardCards,legalActions,FullLastActions,lastActions,history
         Eval = Evaluator()
         data['score'] = Eval.evaluate(hand,board)  
         probWin = probabilityOfWin(hand,board,Eval)
-        if history['numHandsPlayed'] >= 100:
+        if history['numHandsPlayed'] >= 50:
             print "probwin: " + str(probWin)
-            if probWin <= 85:
+            if probWin <= 89:
                 prob = probWin * CalculateStrength(PastAggressiveEvents(FullLastActions,oppName,history),history)
                 print "prob: " + str(prob)
             else:
@@ -95,24 +95,24 @@ def getAction(myHand,boardCards,legalActions,FullLastActions,lastActions,history
                 if (scores[0] - score) > -1000 and (scores[1] - score) > -1000: #average change by switching is low
                     return 'FOLD\n'
         
-        if prob < 60 and (changeInBet > 50 ) : # or formerCap+changeInBet > 80):
+        if prob < 60 and (changeInBet > 30 or changeInBet > 1.5*formerCap) : # or formerCap+changeInBet > 80):
             return 'FOLD\n'
-        if prob < 70 and (changeInBet > 100): # or formerCap+changeInBet > 155): 
+        if prob < 70 and (changeInBet > 50 or changeInBet >= (2*formerCap)): # or formerCap+changeInBet > 155): 
             return 'FOLD\n'
-        elif prob < 75 and changeInBet > 135:
+        elif prob < 80 and (changeInBet > 80 or changeInBet >= (2.5*formerCap) ):
             return 'FOLD\n'
                     
         canRaise = hasAction("RAISE",legalActions)
 
-        if prob > 70 and canRaise != -1:       
+        if prob > 87 and canRaise != -1 and RaiseIndex == -1:       
             raises = legalActions[canRaise].split(':')
             
-            if prob >= 80:
+            if prob >= 95:
                 raiseTo = (int(raises[1])*(1 + (prob/2/100))*(1 + (prob/2/100))/1.5) #close to max
                 return 'RAISE:'+str(min(int(raises[2]),raiseTo))+'\n'
 
             scores = checkMyOdds(hand,board)
-            if (scores[1] - score) > 400 and (scores[0] - score) > 400: #not much better than this
+            if (scores[1] - score) > 600 and (scores[0] - score) > 600: #not much better than this
                 raiseTo = (int(raises[1]))
                 return 'RAISE:'+str(min(int(raises[2]),raiseTo))+'\n'
         
@@ -121,10 +121,10 @@ def getAction(myHand,boardCards,legalActions,FullLastActions,lastActions,history
 
     else: # assume normal BET, CHECK, FOLD
         canBet = hasAction("BET",legalActions)
-        if prob > 65 and canBet != -1:
+        if prob > 67 and canBet != -1:
             bets = legalActions[canBet].split(':')
-            
-            bet = ((1+(prob/100))*(1+(prob/3/100))*int(bets[1])+0.15*int(bets[2]))/2
+            multiplier = max(len(boardCards)*len(boardCards),3)
+            bet = ((1+(prob/100))*(1+(prob/3/100))*int(bets[1])+0.15*200)*multiplier*(prob/100)/24
             return 'BET:'+ str(min(int(bets[2]),bet)) + '\n' 
 
         return 'CHECK\n'
@@ -156,11 +156,11 @@ def preflop(myHand,legalActions,lastActions,history,button,potSize,FullLastActio
     print 'change in bet size: ' + str(changeInBet)
     if index != -1: #no bets yet
         if button == 'true' or button == 'True': #we go first
-            if haveGoodCards >= 5: #only with good cards
+            if haveGoodCards >= 2 and haveGoodCards <= 5: #only with good cards
                 canRaise = hasAction("RAISE",legalActions)
                 raises = legalActions[canRaise].split(':')
-                raiseTo = ((15-haveGoodCards)*int(raises[1])+int(raises[2]))/(16-haveGoodCards) #increases as cards are better
-                return 'RAISE:'+ str(raiseTo) + '\n' 
+                raiseTo = ((15-haveGoodCards)*int(raises[1])+int(raises[2]))/(16-haveGoodCards)/3 #increases as cards are better
+                return 'RAISE:'+ str(max(raiseTo,raises[1])) + '\n' 
             return 'CALL\n'
             
         else: #button = false, other player went first, We go first after flop
@@ -178,11 +178,11 @@ def preflop(myHand,legalActions,lastActions,history,button,potSize,FullLastActio
                 return 'CALL\n'
                 
             else: #villain called
-                if haveGoodCards >= 4:
+                if haveGoodCards >= 2 and haveGoodCards < 5:
                     canRaise = hasAction("RAISE",legalActions)
                     raises = legalActions[canRaise].split(':')
-                    raiseTo = ((13-haveGoodCards)*int(raises[1])+int(raises[2]))/(14-haveGoodCards) #increases as cards are better
-                    return 'RAISE:'+ str(raiseTo) + '\n' 
+                    raiseTo = ((13-haveGoodCards)*int(raises[1])+int(raises[2]))/(14-haveGoodCards)/4 #increases as cards are better
+                    return 'RAISE:'+ str(max(raiseTo,raises[1])) + '\n' 
                     
                 return 'CHECK\n'
                 
