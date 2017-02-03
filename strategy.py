@@ -64,20 +64,28 @@ def getAction(myHand,boardCards,legalActions,FullLastActions,lastActions,history
         
         index = hasAction("BET",lastActions)
         changeInBet = 0
-        lastBet = potSize
         if (index == -1):
             RaiseIndex = hasAction("RAISE",lastActions)
             last = lastRaises(FullLastActions[:])
             print 'last: ' +str(last)
             lastBet = last[0]
             changeInBet = last[1] - lastBet
+            
         else:
             betAction = (lastActions[index])[:].split(':')
-            #print 'betaction:' + str(betAction)
-            changeInBet = int(betAction[1])
-        print 'change in bet size: ' + str(changeInBet)
+            lastBet = int(betAction[1])
+            
+            if RaiseIndex != -1:
+                raiseAction = (lastActions[RaiseIndex])[:].split(':')
+                lastRaise = int(raiseAction[1])
+                changeInBet = lastRaise - lastBet
+            else:
+                changeInBet = lastBet
+                
+        formerCap = (potSize - changeInBet)/2
+        #print 'change in bet size: ' + str(changeInBet)
         
-        if prob < 50:
+        if prob < 50 and changeInBet > 10:
             print "LEts fold!!!!"
             if len(boardCards)>3: #on turn or river - no more chances to discard
                 return 'FOLD\n' #We're not going to win
@@ -87,11 +95,11 @@ def getAction(myHand,boardCards,legalActions,FullLastActions,lastActions,history
                 if (scores[0] - score) > -1000 and (scores[1] - score) > -1000: #average change by switching is low
                     return 'FOLD\n'
         
-        if prob < 60 and changeInBet > 60:
+        if prob < 60 and (changeInBet > 50 ) : # or formerCap+changeInBet > 80):
             return 'FOLD\n'
-        if prob < 70 and changeInBet > 100:
+        if prob < 70 and (changeInBet > 100): # or formerCap+changeInBet > 155): 
             return 'FOLD\n'
-        elif prob < 75 and changeInBet > 150:
+        elif prob < 75 and changeInBet > 135:
             return 'FOLD\n'
                     
         canRaise = hasAction("RAISE",legalActions)
@@ -116,7 +124,7 @@ def getAction(myHand,boardCards,legalActions,FullLastActions,lastActions,history
         if prob > 65 and canBet != -1:
             bets = legalActions[canBet].split(':')
             
-            bet = ((1+(prob/2/100))*(1+(prob/2/100))*int(bets[1])+0.15*int(bets[2]))/2
+            bet = ((1+(prob/100))*(1+(prob/3/100))*int(bets[1])+0.15*int(bets[2]))/2
             return 'BET:'+ str(min(int(bets[2]),bet)) + '\n' 
 
         return 'CHECK\n'
@@ -124,18 +132,28 @@ def getAction(myHand,boardCards,legalActions,FullLastActions,lastActions,history
 def preflop(myHand,legalActions,lastActions,history,button,potSize,FullLastActions):
     haveGoodCards = goodCards(myHand)
     
+    RaiseIndex = hasAction("RAISE",lastActions)
     index = hasAction("POST",lastActions)
     changeInBet = 0
-    lastBet = potSize
     if (index == -1):
         RaiseIndex = hasAction("RAISE",lastActions)
         last = lastRaises(FullLastActions[:])
+        print 'last: ' +str(last)
         lastBet = last[0]
         changeInBet = last[1] - lastBet
+        
     else:
-        #betAction = lastActions[index][:].split(':')
-        changeInBet = 2
-
+        betAction = (lastActions[index])[:].split(':')
+        lastBet = int(betAction[1])
+        
+        if RaiseIndex != -1:
+            raiseAction = (lastActions[RaiseIndex])[:].split(':')
+            lastRaise = int(raiseAction[1])
+            changeInBet = lastRaise - lastBet
+        else:
+            changeInBet = lastBet
+    
+    print 'change in bet size: ' + str(changeInBet)
     if index != -1: #no bets yet
         if button == 'true' or button == 'True': #we go first
             if haveGoodCards >= 5: #only with good cards
@@ -150,11 +168,11 @@ def preflop(myHand,legalActions,lastActions,history,button,potSize,FullLastActio
             if hasAction("CHECK",legalActions) == -1: #villain raised
                 if haveGoodCards <= 2: #our cards are terrible
                     return 'FOLD\n'
-                elif changeInBet > 30 and haveGoodCards < 4:
+                elif changeInBet > 20 and haveGoodCards < 4:
                     return 'FOLD\n'
-                elif changeInBet > 70 and haveGoodCards <= 6:
+                elif changeInBet > 30 and haveGoodCards <= 6:
                     return 'FOLD\n'
-                elif changeInBet > 150 and haveGoodCards < 8:
+                elif changeInBet > 50 and haveGoodCards < 8:
                     return 'FOLD\n'
                     
                 return 'CALL\n'
@@ -171,11 +189,11 @@ def preflop(myHand,legalActions,lastActions,history,button,potSize,FullLastActio
     else: #some action happened after post
         if haveGoodCards <= 2: #our cards are terrible
             return 'FOLD\n'
-        elif changeInBet > 30 and haveGoodCards <= 4:
+        elif changeInBet > 20 and haveGoodCards <= 4:
             return 'FOLD\n'
-        elif changeInBet > 70 and haveGoodCards <= 6:
+        elif changeInBet > 30 and haveGoodCards <= 6:
             return 'FOLD\n'
-        elif changeInBet > 150 and haveGoodCards < 8:
+        elif changeInBet > 50 and haveGoodCards < 8:
             return 'FOLD\n'
                     
         return 'CALL\n'
@@ -224,7 +242,7 @@ def goodCards(myHand): #returns integer based on relative value of original card
     
 def hasAction(act,actions): #returns index of action in list without ValueError
     
-    for i in range(0,len(actions)):
+    for i in range(len(actions)-1,-1,-1):
         if actions[i].find(act) != -1:
             return i
     

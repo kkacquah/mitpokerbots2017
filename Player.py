@@ -66,7 +66,7 @@ class Player:
 				print hist.display_stats()
 				fullLastActions = []
 			elif word == "GETACTION":
-				potSize = data[1]
+				potSize = int(data[1])
 				print 'data is: ' + str(data)
 				numBoardCards = int(data[2])
 				boardCards = []
